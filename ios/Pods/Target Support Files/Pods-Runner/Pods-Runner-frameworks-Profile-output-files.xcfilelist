@@ -1,0 +1,6 @@
+${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Stripe.framework
+${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/StripeApplePay.framework
+${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/StripeCore.framework
+${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/StripeFinancialConnections.framework
+${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/StripeUICore.framework
+${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/stripe_ios.framework
