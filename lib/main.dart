@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_stripe_payment/services/auth_service.dart';
+import 'package:flutter_stripe_payment/services/user_service.dart';
+import 'firebase_options.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:flutter_stripe_payment/constants/secrets.dart';
 
-void main() {
+void main() async {
   Stripe.publishableKey = stripePublishableKey;
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -42,12 +50,14 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () async {
               // create payment method
               try {
-                   
+                final _authService = AuthService(userService: UserService());
+                _authService.signUp(
+                    email: 'nonybrighto2@gmail.com', password: 'tested69');
               } catch (error) {
                 print(error);
               }
             },
-            child: Text('pay'),
+            child: Text('Register'),
           )
         ],
       ),

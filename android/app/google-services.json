@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "977298458089",
+    "project_id": "flutter-stripe-payment-80c2c",
+    "storage_bucket": "flutter-stripe-payment-80c2c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:977298458089:android:ba71c9d10a6567f4f7f778",
+        "android_client_info": {
+          "package_name": "com.example.flutter_stripe_payment"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "977298458089-jun8l8ghnetjco1imft3c10as9fpp889.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFqhi__W9q9y0IAM7_G-P5IT4UO-IscpQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "977298458089-jun8l8ghnetjco1imft3c10as9fpp889.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "977298458089-hkpcapj8ps3ul6km88b2np1l2320bq9t.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nonybrighto.stripe-payment"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
