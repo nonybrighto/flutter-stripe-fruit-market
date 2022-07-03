@@ -1,13 +1,13 @@
-class User {
+class Customer {
   String id;
   String email;
 
-  User({
+  Customer({
     required this.id,
     required this.email,
   });
 
-  User.fromJson(Map<String, dynamic> json)
+  Customer.fromJson(Map<String, dynamic> json)
       : id = json['id'],
         email = json['email'];
 
