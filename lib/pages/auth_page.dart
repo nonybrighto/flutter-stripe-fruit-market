@@ -78,7 +78,6 @@ class _AuthPageState extends State<AuthPage> {
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => const HomePage()));
     } catch (error) {
-      print(error);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Failed to login"),
         duration: Duration(milliseconds: 300),
