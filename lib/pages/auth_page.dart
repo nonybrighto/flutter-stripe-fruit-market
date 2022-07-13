@@ -12,7 +12,7 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
-  bool _isSignIn = false;
+  bool _isSignIn = true;
   bool _loading = false;
 
   final TextEditingController _emailController =
