@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe_payment/models/customer.dart';
 import 'package:flutter_stripe_payment/models/product.dart';
 import 'package:flutter_stripe_payment/pages/card_page.dart';
+import 'package:flutter_stripe_payment/services/auth_service.dart';
 import 'package:flutter_stripe_payment/services/customer_service.dart';
+import 'package:flutter_stripe_payment/services/payment_service.dart';
 import 'package:flutter_stripe_payment/services/product_service.dart';
 import 'package:flutter_stripe_payment/widgets/product_card.dart';
 
@@ -69,7 +71,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  _onPurchasePressed() {
+  _onPurchasePressed({required Product product}) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -78,9 +80,14 @@ class _HomePageState extends State<HomePage> {
             children: [
               SimpleDialogOption(
                 child: const Text('Payment Sheet'),
-                onPressed: () {
+                onPressed: () async {
                   Navigator.of(context).pop();
                   //show payment sheet
+                  final paymentService = PaymentService(
+                      authService:
+                          AuthService(customerService: CustomerService()));
+                  await paymentService.payWithPaymentSheet(
+                      productId: product.id);
                 },
               ),
               SimpleDialogOption(

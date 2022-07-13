@@ -26,4 +26,11 @@ class AuthService {
           .createUser(Customer(id: user.uid, email: user.email!));
     }
   }
+
+   Future<String> getAuthorizedUserToken() async {
+    if (FirebaseAuth.instance.currentUser != null) {
+      return FirebaseAuth.instance.currentUser!.getIdToken();
+    }
+    return '';
+  }
 }

@@ -6,8 +6,10 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:flutter_stripe_payment/constants/secrets.dart';
 
 void main() async {
-  Stripe.publishableKey = stripePublishableKey;
   WidgetsFlutterBinding.ensureInitialized();
+  Stripe.publishableKey = stripePublishableKey;
+  Stripe.merchantIdentifier = 'Flutter Stripe Payment';
+  await Stripe.instance.applySettings();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

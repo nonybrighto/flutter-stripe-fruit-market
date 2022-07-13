@@ -4,7 +4,7 @@ import 'package:flutter_stripe_payment/models/product.dart';
 class ProductCard extends StatelessWidget {
   final Product product;
   final bool showPurchase;
-  final Function()? onPurchasePressed;
+  final Function({required Product product})? onPurchasePressed;
 
   const ProductCard({
     Key? key,
@@ -34,10 +34,10 @@ class ProductCard extends StatelessWidget {
               height: 10,
             ),
             Text(product.name),
-            Text(product.price.toString()),
+            Text(product.amount.toString()),
             if (showPurchase)
               ElevatedButton(
-                onPressed: onPurchasePressed,
+                onPressed: () => onPurchasePressed!(product: product),
                 child: const Text('Buy'),
               ),
           ],
