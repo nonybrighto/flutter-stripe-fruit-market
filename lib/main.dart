@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_stripe_payment/pages/auth_page.dart';
@@ -10,14 +8,14 @@ import 'package:flutter_stripe_payment/constants/secrets.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Stripe.publishableKey = stripePublishableKey;
-  Stripe.merchantIdentifier = 'Flutter Stripe Payment';
+  Stripe.merchantIdentifier = 'merchant.flutter.stripe.test';
   await Stripe.instance.applySettings();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
-  await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+  // FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+  // await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
 
   runApp(const MyApp());
 }

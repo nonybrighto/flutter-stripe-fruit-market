@@ -16,7 +16,7 @@ class _AuthPageState extends State<AuthPage> {
   bool _loading = false;
 
   final TextEditingController _emailController =
-      TextEditingController(text: 'nn@ggg.com');
+      TextEditingController(text: 'nonybrighto@gmail.com');
   final TextEditingController _passwordController =
       TextEditingController(text: 'tested69');
   @override

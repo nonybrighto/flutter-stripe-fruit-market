@@ -8,11 +8,6 @@ exports.createStripeCustomer = functions.firestore
     .document("customers/{customerId}")
     .onCreate(async (snap, context) => {
       try {
-        console.log("Key");
-        console.log(process.env.STRIPE_SECRET_KEY);
-        functions.
-            logger.
-            info("secrete", {secret: process.env.STRIPE_SECRET_KEY});
         const newValue = snap.data();
         const customer = await stripe.customers.create({
           email: newValue.email,
@@ -25,7 +20,7 @@ exports.createStripeCustomer = functions.firestore
               stripeCustomerId: customer.id,
             });
       } catch (error) {
-        functions.logger.info("error creating stripe customer", {error: error});
+        functions.logger.error("Stripe customer ccreation error", error);
       }
     });
 
@@ -33,14 +28,10 @@ exports.createPaymentIntent = functions.https
     .onRequest(async (request, response) => {
       try {
         const {productId} = request.body;
-        functions.logger.info("body", {body: request.body});
         const customer = await _getCustomerFromRequest(request);
-        functions.logger.info("intent create customer", {customer: customer});
         const product = await _getProduct(productId);
-        functions.logger.info("intent create producct", {product: product});
-
         const stripeObject = {
-          amount: product.amount * 100, // Use smallest currency unit.
+          amount: product.amount * 100, // Use smallest currency unit (cent)
           currency: "USD",
           payment_method_types: ["card"],
           setup_future_usage: "off_session",
@@ -56,7 +47,34 @@ exports.createPaymentIntent = functions.https
         const paymentIntent = await stripe.paymentIntents.create(stripeObject);
         return response.status(200).send(paymentIntent);
       } catch (error) {
-        functions.logger.info("intent create", {error: error});
+        functions.logger.error("intent create", error);
+        return response.sendStatus(400);
+      }
+    });
+
+
+exports.stripeWebhook = functions.https
+    .onRequest(async (request, response) => {
+      try {
+        let event;
+        try {
+          event = stripe.webhooks.constructEvent(
+              request.rawBody,
+              request.headers["stripe-signature"] || [],
+              process.env.STRIPE_WEBHOOK_SECRET,
+          );
+        } catch (error) {
+          functions.logger.info("stripe webhook verification error",
+              error);
+          return response.sendStatus(400);
+        }
+        if (event.type === "payment_intent.succeeded") {
+          const {customerId, productId} = request.body.data.object.metadata;
+          await _savePurchase(customerId, productId);
+        }
+        return response.sendStatus(200);
+      } catch (error) {
+        functions.logger.error("stripe webhook error", error);
         return response.sendStatus(400);
       }
     });
@@ -80,14 +98,27 @@ async function _getProduct(productId) {
 */
 async function _getCustomerFromRequest(request) {
   const idToken = request.get("Authorization").split("Bearer ")[1];
-  functions.logger.info("token", {idToken: idToken});
-  functions.
-      logger.info("intent id token", {token: idToken});
-
   const verifiedToken = await admin.auth().verifyIdToken(idToken);
   const documentSnapshot = await admin
       .firestore()
       .collection("customers")
       .doc(verifiedToken.uid).get();
   return {id: documentSnapshot.id, ...documentSnapshot.data()};
+}
+
+/**
+ *
+ * @param {string} customerId firebase id of the customer
+ * that made the purchase.
+ * @param {string} productId product that was purchased by the customer.
+ */
+async function _savePurchase(customerId, productId) {
+  const product = await _getProduct(productId);
+  await admin
+      .firestore()
+      .collection("purchases").add({
+        customerId,
+        product,
+        datePurchased: admin.firestore.FieldValue.serverTimestamp(),
+      });
 }

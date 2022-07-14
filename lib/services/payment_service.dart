@@ -37,8 +37,6 @@ class PaymentService {
         merchantCountryCode: 'US',
       ),
     );
-    print('Init done');
     await Stripe.instance.presentPaymentSheet();
-    print('Init end');
   }
 }
