@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe_payment/models/customer.dart';
 import 'package:flutter_stripe_payment/models/product.dart';
 import 'package:flutter_stripe_payment/pages/card_page.dart';
+import 'package:flutter_stripe_payment/pages/purchases_page.dart';
 import 'package:flutter_stripe_payment/services/auth_service.dart';
 import 'package:flutter_stripe_payment/services/customer_service.dart';
 import 'package:flutter_stripe_payment/services/payment_service.dart';
@@ -30,6 +31,14 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home Page'),
+        actions: [
+          IconButton(
+              icon: const Icon(Icons.inventory),
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const PurchasesPage()));
+              })
+        ],
       ),
       body: Column(children: [
         Text(_authenticatedCustomer != null
