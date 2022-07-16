@@ -18,13 +18,8 @@ class AuthService {
   }
 
   Future<void> signIn({required String email, required String password}) async {
-    UserCredential userCredential = await FirebaseAuth.instance
+    await FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: password);
-    final user = userCredential.user;
-    if (user != null) {
-      await customerService
-          ?.createUser(Customer(id: user.uid, email: user.email!));
-    }
   }
 
   Future<String> getAuthorizedUserToken() async {
