@@ -9,7 +9,7 @@ class CustomerService {
     await _customerCollection.doc(user.id).set(user.toJson());
   }
 
-  getAuthenticatedCustomer() async {
+  Future<Customer?> getAuthenticatedCustomer() async {
     final _currentUser = FirebaseAuth.instance.currentUser;
     if (_currentUser != null) {
       final _customerSnapshot =
@@ -17,5 +17,6 @@ class CustomerService {
       return Customer.fromJson(
           {"id": _customerSnapshot.id, ..._customerSnapshot.data()!});
     }
+    return null;
   }
 }

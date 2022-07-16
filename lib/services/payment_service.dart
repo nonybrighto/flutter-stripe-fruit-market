@@ -39,4 +39,30 @@ class PaymentService {
     );
     await Stripe.instance.presentPaymentSheet();
   }
+
+  payWithCardField({productId, saveCard = false}) async {
+    try {
+      final authenticatedCustomer =
+          await authService.customerService?.getAuthenticatedCustomer();
+      final paymentIntent = await createPaymentIntent(productId: productId);
+      final billingDetails = BillingDetails(
+        email: authenticatedCustomer!.email,
+      );
+
+      await Stripe.instance.confirmPayment(
+        paymentIntent['client_secret'],
+        PaymentMethodParams.card(
+          paymentMethodData: PaymentMethodData(
+            billingDetails: billingDetails,
+          ),
+          options: PaymentMethodOptions(
+            setupFutureUsage:
+                saveCard ? PaymentIntentsFutureUsage.OffSession : null,
+          ),
+        ),
+      );
+    } catch (error) {
+      throw Exception('Faield to make payment');
+    }
+  }
 }

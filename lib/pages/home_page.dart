@@ -104,7 +104,8 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const CardPage()));
+                    builder: (context) => CardPage(productToPurchase: product),
+                  ));
                 },
               ),
             ],
