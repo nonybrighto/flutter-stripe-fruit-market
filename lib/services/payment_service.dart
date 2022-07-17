@@ -10,12 +10,15 @@ class PaymentService {
 
   PaymentService({required this.authService});
 
-  Future<Map<String, dynamic>> createPaymentIntent({productId}) async {
+  Future<Map<String, dynamic>> createPaymentIntent(
+      {required String productId, CardPaymentMethod? cardPaymentMethod}) async {
     final userToken = await authService.getAuthorizedUserToken();
     Response response =
         await Dio(BaseOptions(headers: {'Authorization': 'Bearer $userToken'}))
-            .post("$apiBaseUrl/createPaymentIntent",
-                data: {'productId': productId});
+            .post("$apiBaseUrl/createPaymentIntent", data: {
+      'productId': productId,
+      'paymentMethodId': cardPaymentMethod?.id
+    });
     return response.data;
   }
 
@@ -85,5 +88,26 @@ class PaymentService {
       );
     }).toList();
     return cards;
+  }
+
+  payWithSavedCard(
+      {required String productId,
+      required CardPaymentMethod cardPaymentMethod}) async {
+    try {
+      final paymentIntent = await createPaymentIntent(
+        productId: productId,
+        cardPaymentMethod: cardPaymentMethod,
+      );
+      await Stripe.instance.confirmPayment(
+          paymentIntent['client_secret'],
+          PaymentMethodParams.cardFromMethodId(
+            paymentMethodData: PaymentMethodDataCardFromMethod(
+              paymentMethodId: cardPaymentMethod.id,
+            ),
+          ));
+    } catch (error) {
+      print(error);
+      throw Exception('Failed to make payment');
+    }
   }
 }

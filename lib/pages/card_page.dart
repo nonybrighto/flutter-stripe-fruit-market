@@ -73,7 +73,7 @@ class _CardPageState extends State<CardPage> {
                   _saveCard = value ?? false;
                 });
               }),
-          const Text('Save Ccard'),
+          const Text('Save Card'),
         ],
       ),
       ElevatedButton(
@@ -99,14 +99,34 @@ class _CardPageState extends State<CardPage> {
                 return ListTile(
                   title: Text('**** **** **** ${card.last4}'),
                   subtitle: Text('${card.expiryMonth}/${card.expiryYear}'),
-                  onTap: () {
-                    //pressed
-                  },
+                  onTap: () =>
+                      _handleSavedCardButtonPressed(cardPaymentMethods[index]),
                 );
               }));
         },
       )
     ];
+  }
+
+  _handleSavedCardButtonPressed(CardPaymentMethod cardPaymentMethod) async {
+    try {
+      setState(() {
+        loading = true;
+      });
+      await paymentService.payWithSavedCard(
+          productId: widget.productToPurchase.id,
+          cardPaymentMethod: cardPaymentMethod);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Payment successful")));
+    } catch (error) {
+       print(error);
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to make payment")));
+    } finally {
+      setState(() {
+        loading = false;
+      });
+    }
   }
 
   _handlePayButtonPressed() async {
