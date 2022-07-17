@@ -53,6 +53,24 @@ exports.createPaymentIntent = functions.https
     });
 
 
+exports.fetchCustomerCards = functions.https.onRequest(
+    async (request, response) => {
+      try {
+        const customer = await _getCustomerFromRequest(request);
+        const paymentMethods = await stripe.paymentMethods.list({
+          customer: customer.stripeCustomerId,
+          type: "card",
+        });
+        return response.status(200).send(paymentMethods.data);
+      } catch (error) {
+        console.log(error);
+        functions.logger.error("Customer card error", error);
+        return response.sendStatus(400);
+      }
+    },
+);
+
+
 exports.stripeWebhook = functions.https
     .onRequest(async (request, response) => {
       try {

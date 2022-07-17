@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:flutter_stripe_payment/models/card_payment_method.dart';
 import 'package:flutter_stripe_payment/models/product.dart';
 import 'package:flutter_stripe_payment/services/auth_service.dart';
 import 'package:flutter_stripe_payment/services/customer_service.dart';
@@ -47,7 +48,7 @@ class _CardPageState extends State<CardPage> {
         title: const Text('Card Page'),
       ),
       body: Column(
-        children: [..._buildCardForm()],
+        children: [..._buildCardForm(), ..._buildSavedCardsDisplay()],
       ),
     );
   }
@@ -79,6 +80,32 @@ class _CardPageState extends State<CardPage> {
         onPressed: allowPayButtonPress ? _handlePayButtonPressed : null,
         child: loading ? const CircularProgressIndicator() : const Text('Pay'),
       ),
+    ];
+  }
+
+  _buildSavedCardsDisplay() {
+    return [
+      const Text('Use Saved cards'),
+      FutureBuilder<List<CardPaymentMethod>>(
+        initialData: const [],
+        future: paymentService.fetchCustomerCard(),
+        builder: (context, builder) {
+          final cardPaymentMethods = builder.data;
+          return ListView.builder(
+              shrinkWrap: true,
+              itemCount: cardPaymentMethods!.length,
+              itemBuilder: ((context, index) {
+                final card = cardPaymentMethods[index];
+                return ListTile(
+                  title: Text('**** **** **** ${card.last4}'),
+                  subtitle: Text('${card.expiryMonth}/${card.expiryYear}'),
+                  onTap: () {
+                    //pressed
+                  },
+                );
+              }));
+        },
+      )
     ];
   }
 

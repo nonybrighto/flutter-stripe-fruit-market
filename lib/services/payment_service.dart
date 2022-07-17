@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:flutter_stripe_payment/constants/constants.dart';
+import 'package:flutter_stripe_payment/models/card_payment_method.dart';
 import 'package:flutter_stripe_payment/services/auth_service.dart';
 
 class PaymentService {
@@ -62,7 +63,27 @@ class PaymentService {
         ),
       );
     } catch (error) {
-      throw Exception('Faield to make payment');
+      throw Exception('Failed to make payment');
     }
+  }
+
+  Future<List<CardPaymentMethod>> fetchCustomerCard() async {
+    final userToken = await authService.getAuthorizedUserToken();
+    Response response =
+        await Dio(BaseOptions(headers: {'Authorization': 'Bearer $userToken'}))
+            .get("$apiBaseUrl/fetchCustomerCards");
+    print(response);
+    print(response.data);
+    final cards = response.data.map<CardPaymentMethod>((intent) {
+      final card = intent['card'];
+      return CardPaymentMethod(
+        id: intent['id'],
+        brand: card['brand'],
+        expiryMonth: card['exp_month'],
+        expiryYear: card['exp_year'],
+        last4: card['last4'],
+      );
+    }).toList();
+    return cards;
   }
 }
