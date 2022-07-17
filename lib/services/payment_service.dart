@@ -90,6 +90,20 @@ class PaymentService {
     return cards;
   }
 
+  deletePaymentMethod(CardPaymentMethod cardPaymentMethod) async {
+    try {
+      final userToken = await authService.getAuthorizedUserToken();
+      await Dio(
+        BaseOptions(headers: {'Authorization': 'Bearer $userToken'}),
+      ).post(
+        "$apiBaseUrl/deletePaymentMethod",
+        data: {"paymentMethodId": cardPaymentMethod.id},
+      );
+    } catch (error) {
+      throw Exception('Failed to delete payment method');
+    }
+  }
+
   payWithSavedCard(
       {required String productId,
       required CardPaymentMethod cardPaymentMethod}) async {
@@ -106,7 +120,6 @@ class PaymentService {
             ),
           ));
     } catch (error) {
-      print(error);
       throw Exception('Failed to make payment');
     }
   }

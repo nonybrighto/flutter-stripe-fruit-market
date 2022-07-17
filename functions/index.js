@@ -70,6 +70,19 @@ exports.fetchCustomerCards = functions.https.onRequest(
     },
 );
 
+exports.deletePaymentMethod = functions.https.onRequest(
+    async (request, response) => {
+      try {
+        await stripe.paymentMethods.detach(request.body.paymentMethodId);
+        return response.sendStatus(200);
+      } catch (error) {
+        console.log(error);
+        functions.logger.info("delete payment method", {error: error});
+        return response.sendStatus(400);
+      }
+    },
+);
+
 
 exports.stripeWebhook = functions.https
     .onRequest(async (request, response) => {

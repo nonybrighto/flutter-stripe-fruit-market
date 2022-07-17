@@ -101,11 +101,34 @@ class _CardPageState extends State<CardPage> {
                   subtitle: Text('${card.expiryMonth}/${card.expiryYear}'),
                   onTap: () =>
                       _handleSavedCardButtonPressed(cardPaymentMethods[index]),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () =>
+                        _handleDeleteButtonPressed(cardPaymentMethods[index]),
+                  ),
                 );
               }));
         },
       )
     ];
+  }
+
+  _handleDeleteButtonPressed(CardPaymentMethod cardPaymentMethod) async {
+    try {
+      setState(() {
+        loading = true;
+      });
+      await paymentService.deletePaymentMethod(cardPaymentMethod);
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Card removed successfully")));
+    } catch (error) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Failed to remove card")));
+    } finally {
+      setState(() {
+        loading = false;
+      });
+    }
   }
 
   _handleSavedCardButtonPressed(CardPaymentMethod cardPaymentMethod) async {
@@ -119,7 +142,7 @@ class _CardPageState extends State<CardPage> {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Payment successful")));
     } catch (error) {
-       print(error);
+      print(error);
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Failed to make payment")));
     } finally {
