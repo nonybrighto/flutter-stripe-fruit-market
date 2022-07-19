@@ -53,6 +53,39 @@ exports.createPaymentIntent = functions.https
     });
 
 
+// used to charge a card without intercation from the customer.
+// Suitable for cron jobs. For this example, it will still be triggered
+// from the front end as a second alternative to making payment with saved card.
+
+exports.chargeCardOffSession = functions.https
+    .onRequest(async (request, response) => {
+      try {
+        const {productId} = request.body;
+        const customer = await _getCustomerFromRequest(request);
+        const product = await _getProduct(productId);
+        const stripeObject = {
+          amount: product.amount * 100, // Use smallest currency unit (cent)
+          currency: "USD",
+          customer: customer.stripeCustomerId,
+          payment_method: request.body.paymentMethodId,
+          off_session: true,
+          confirm: true,
+          metadata: {
+            productId,
+            customerId: customer.id,
+          },
+        };
+        const paymentIntent = await stripe.paymentIntents.create(stripeObject);
+        return response.status(200).send(paymentIntent);
+      } catch (error) {
+        // best to send a message to the customer letting them know
+        // that their card was not charged
+        functions.logger.error("intent create", error);
+        return response.sendStatus(400);
+      }
+    });
+
+
 exports.fetchCustomerCards = functions.https.onRequest(
     async (request, response) => {
       try {

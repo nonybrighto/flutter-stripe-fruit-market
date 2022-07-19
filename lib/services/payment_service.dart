@@ -108,6 +108,8 @@ class PaymentService {
       {required String productId,
       required CardPaymentMethod cardPaymentMethod}) async {
     try {
+      // method 1
+      // comment out method one and uncomment method 2 to rey it out
       final paymentIntent = await createPaymentIntent(
         productId: productId,
         cardPaymentMethod: cardPaymentMethod,
@@ -119,8 +121,30 @@ class PaymentService {
               paymentMethodId: cardPaymentMethod.id,
             ),
           ));
+
+      // method 2
+      // This method creates a payment intent that charges the saved card without
+      // needing to confirm payment from the client. This is suitable for cron
+      // jobs (tasks that don't require the user to be actively making use of the application when they occur)
+
+      // await chargeCardOffSession(
+      //   productId: productId,
+      //   cardPaymentMethod: cardPaymentMethod,
+      // );
     } catch (error) {
       throw Exception('Failed to make payment');
     }
+  }
+
+  Future<Map<String, dynamic>> chargeCardOffSession(
+      {required String productId, CardPaymentMethod? cardPaymentMethod}) async {
+    final userToken = await authService.getAuthorizedUserToken();
+    Response response =
+        await Dio(BaseOptions(headers: {'Authorization': 'Bearer $userToken'}))
+            .post("$apiBaseUrl/chargeCardOffSession", data: {
+      'productId': productId,
+      'paymentMethodId': cardPaymentMethod?.id
+    });
+    return response.data;
   }
 }
