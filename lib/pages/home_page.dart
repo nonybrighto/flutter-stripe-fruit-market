@@ -92,11 +92,18 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () async {
                   Navigator.of(context).pop();
                   //show payment sheet
-                  final paymentService = PaymentService(
-                      authService:
-                          AuthService(customerService: CustomerService()));
-                  await paymentService.payWithPaymentSheet(
-                      productId: product.id);
+                  try {
+                    final paymentService = PaymentService(
+                        authService:
+                            AuthService(customerService: CustomerService()));
+                    await paymentService.payWithPaymentSheet(
+                        productId: product.id);
+                  } catch (error) {
+                    print(error);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text("Failed to create payment sheet"),
+                    ));
+                  }
                 },
               ),
               SimpleDialogOption(

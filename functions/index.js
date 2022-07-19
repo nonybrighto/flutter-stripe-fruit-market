@@ -1,6 +1,8 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2020-08-27",
+});
 admin.initializeApp();
 
 
@@ -27,7 +29,8 @@ exports.createStripeCustomer = functions.firestore
 exports.createPaymentIntent = functions.https
     .onRequest(async (request, response) => {
       try {
-        const {productId} = request.body;
+        let ephemeralKey;
+        const {productId, paymentMethodId, includeEphemeralKey} = request.body;
         const customer = await _getCustomerFromRequest(request);
         const product = await _getProduct(productId);
         const stripeObject = {
@@ -41,11 +44,21 @@ exports.createPaymentIntent = functions.https
             customerId: customer.id,
           },
         };
-        if (request.body.paymentMethodId) {
-          stripeObject.payment_method = request.body.paymentMethodId;
+        if (paymentMethodId) {
+          stripeObject.payment_method = paymentMethodId;
+        }
+
+        if (includeEphemeralKey) {
+          ephemeralKey = await stripe.
+              ephemeralKeys.create({customer: customer.stripeCustomerId},
+                  {apiVersion: "2020-08-27"},
+              );
         }
         const paymentIntent = await stripe.paymentIntents.create(stripeObject);
-        return response.status(200).send(paymentIntent);
+        return response.status(200).send({
+          clientSecret: paymentIntent["client_secret"],
+          ephemeralKey: ephemeralKey.secret,
+        });
       } catch (error) {
         functions.logger.error("intent create", error);
         return response.sendStatus(400);
@@ -78,8 +91,8 @@ exports.chargeCardOffSession = functions.https
         const paymentIntent = await stripe.paymentIntents.create(stripeObject);
         return response.status(200).send(paymentIntent);
       } catch (error) {
-        // best to send a message to the customer letting them know
-        // that their card was not charged
+      // best to send a message to the customer letting them know
+      // that their card was not charged
         functions.logger.error("intent create", error);
         return response.sendStatus(400);
       }

@@ -11,27 +11,35 @@ class PaymentService {
   PaymentService({required this.authService});
 
   Future<Map<String, dynamic>> createPaymentIntent(
-      {required String productId, CardPaymentMethod? cardPaymentMethod}) async {
+      {required String productId,
+      CardPaymentMethod? cardPaymentMethod,
+      bool includeEphemeralKey = false}) async {
     final userToken = await authService.getAuthorizedUserToken();
     Response response =
         await Dio(BaseOptions(headers: {'Authorization': 'Bearer $userToken'}))
             .post("$apiBaseUrl/createPaymentIntent", data: {
       'productId': productId,
-      'paymentMethodId': cardPaymentMethod?.id
+      'paymentMethodId': cardPaymentMethod?.id,
+      'includeEphemeralKey': includeEphemeralKey,
     });
     return response.data;
   }
 
   payWithPaymentSheet({productId}) async {
-    final paymentIntent = await createPaymentIntent(productId: productId);
+    final paymentIntent = await createPaymentIntent(
+      productId: productId,
+      includeEphemeralKey: true,
+    );
+    final authenticatedCustomer =
+        await authService.customerService?.getAuthenticatedCustomer();
     await Stripe.instance.initPaymentSheet(
       paymentSheetParameters: SetupPaymentSheetParameters(
         // Main params
-        paymentIntentClientSecret: paymentIntent['client_secret'],
+        paymentIntentClientSecret: paymentIntent['clientSecret'],
         merchantDisplayName: 'Flutter Stripe Payment',
         // Customer params
-        customerId: paymentIntent['customer'],
-        // customerEphemeralKeySecret: data['ephemeralKey'],
+        customerId: authenticatedCustomer!.stripeCustomerId,
+        customerEphemeralKeySecret: paymentIntent['ephemeralKey'],
         // Extra params
         applePay: true,
         googlePay: true,
@@ -54,7 +62,7 @@ class PaymentService {
       );
 
       await Stripe.instance.confirmPayment(
-        paymentIntent['client_secret'],
+        paymentIntent['clientSecret'],
         PaymentMethodParams.card(
           paymentMethodData: PaymentMethodData(
             billingDetails: billingDetails,
@@ -115,7 +123,7 @@ class PaymentService {
         cardPaymentMethod: cardPaymentMethod,
       );
       await Stripe.instance.confirmPayment(
-          paymentIntent['client_secret'],
+          paymentIntent['clientSecret'],
           PaymentMethodParams.cardFromMethodId(
             paymentMethodData: PaymentMethodDataCardFromMethod(
               paymentMethodId: cardPaymentMethod.id,
