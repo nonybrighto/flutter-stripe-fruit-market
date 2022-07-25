@@ -57,7 +57,7 @@ exports.createPaymentIntent = functions.https
         const paymentIntent = await stripe.paymentIntents.create(stripeObject);
         return response.status(200).send({
           clientSecret: paymentIntent["client_secret"],
-          ephemeralKey: ephemeralKey.secret,
+          ephemeralKey: ephemeralKey && ephemeralKey.secret,
         });
       } catch (error) {
         functions.logger.error("intent create", error);
