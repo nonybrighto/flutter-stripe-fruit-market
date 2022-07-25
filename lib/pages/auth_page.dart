@@ -22,44 +22,69 @@ class _AuthPageState extends State<AuthPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Authentication')),
-      body: Column(
-        children: [
-          TextField(
-            decoration: const InputDecoration(label: Text('Email')),
-            controller: _emailController,
-          ),
-          TextField(
-            decoration: const InputDecoration(label: Text('Password')),
-            obscureText: true,
-            controller: _passwordController,
-          ),
-          ElevatedButton(
-            onPressed: _onAuthButtonPressed,
-            child: _loading
-                ? const CircularProgressIndicator()
-                : Text(_isSignIn ? 'Sign In' : 'Sign Up'),
-          ),
-          RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-                style: const TextStyle(color: Colors.grey),
-                text: _isSignIn
-                    ? "Don't have an account?"
-                    : 'Already registered?',
-                children: [
-                  TextSpan(
-                      text: _isSignIn ? "Sign Up" : "Sign In",
-                      style: const TextStyle(color: Colors.green),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () {
-                          setState(() {
-                            _isSignIn = !_isSignIn;
-                          });
-                        }),
-                ]),
-          ),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            RichText(
+              text: TextSpan(
+                  style:
+                      const TextStyle(color: Color(0XFF2c4352), fontSize: 35),
+                  text: 'Fruit ',
+                  children: [
+                    TextSpan(
+                      text: 'Market',
+                      style: TextStyle(color: Theme.of(context).primaryColor),
+                    ),
+                  ]),
+            ),
+            const SizedBox(height: 50),
+            TextField(
+              decoration: const InputDecoration(label: Text('Email')),
+              controller: _emailController,
+            ),
+            TextField(
+              decoration: const InputDecoration(label: Text('Password')),
+              obscureText: true,
+              controller: _passwordController,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12) // <-- Radius
+                    ),
+                minimumSize: const Size.fromHeight(
+                    50), // fromHeight use double.infinity as width and 40 is the height
+              ),
+              onPressed: _onAuthButtonPressed,
+              child: _loading
+                  ? const CircularProgressIndicator()
+                  : Text(_isSignIn ? 'Sign In' : 'Sign Up'),
+            ),
+            const SizedBox(height: 20),
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                  style: const TextStyle(color: Colors.grey),
+                  text: _isSignIn
+                      ? "Don't have an account? "
+                      : 'Already registered? ',
+                  children: [
+                    TextSpan(
+                        text: _isSignIn ? "Sign Up" : "Sign In",
+                        style: TextStyle(color: Theme.of(context).primaryColor),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            setState(() {
+                              _isSignIn = !_isSignIn;
+                            });
+                          }),
+                  ]),
+            ),
+          ],
+        ),
       ),
     );
   }
