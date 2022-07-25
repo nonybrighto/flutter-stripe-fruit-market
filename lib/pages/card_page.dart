@@ -5,6 +5,8 @@ import 'package:flutter_stripe_payment/models/product.dart';
 import 'package:flutter_stripe_payment/services/auth_service.dart';
 import 'package:flutter_stripe_payment/services/customer_service.dart';
 import 'package:flutter_stripe_payment/services/payment_service.dart';
+import 'package:flutter_stripe_payment/widgets/base_view.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 
 class CardPage extends StatefulWidget {
   final Product productToPurchase;
@@ -19,6 +21,7 @@ class _CardPageState extends State<CardPage> {
   final controller = CardFormEditController();
   bool loading = false;
   bool _saveCard = false;
+  late BuildContext _parentContext;
   PaymentService paymentService = PaymentService(
     authService: AuthService(
       customerService: CustomerService(),
@@ -43,12 +46,19 @@ class _CardPageState extends State<CardPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Card Page'),
-      ),
-      body: Column(
-        children: [..._buildCardForm(), ..._buildSavedCardsDisplay()],
+    return LoaderOverlay(
+      useDefaultLoading: false,
+      overlayWidget: const Center(child: CircularProgressIndicator()),
+      child: BaseView(
+        title: 'title',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ..._buildCardForm(),
+            const SizedBox(height: 20),
+            ..._buildSavedCardsDisplay(),
+          ],
+        ),
       ),
     );
   }
@@ -77,6 +87,13 @@ class _CardPageState extends State<CardPage> {
         ],
       ),
       ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12) // <-- Radius
+              ),
+          minimumSize: const Size.fromHeight(
+              50), // fromHeight use double.infinity as width and 40 is the height
+        ),
         onPressed: allowPayButtonPress ? _handlePayButtonPressed : null,
         child: loading ? const CircularProgressIndicator() : const Text('Pay'),
       ),
@@ -85,26 +102,55 @@ class _CardPageState extends State<CardPage> {
 
   _buildSavedCardsDisplay() {
     return [
-      const Text('Use Saved cards'),
+      const Text(
+        'Use Saved cards',
+        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+      ),
+      const SizedBox(
+        height: 20,
+      ),
       FutureBuilder<List<CardPaymentMethod>>(
-        initialData: const [],
         future: paymentService.fetchCustomerCard(),
-        builder: (context, builder) {
-          final cardPaymentMethods = builder.data;
+        builder: (context, snapshot) {
+          _parentContext = context;
+          final cardPaymentMethods = snapshot.data;
+          if (!snapshot.hasData) {
+            return Center(
+              child: snapshot.hasError
+                  ? const Text('Could not load cards')
+                  : const CircularProgressIndicator(),
+            );
+          } else if (cardPaymentMethods!.isEmpty) {
+            return const Center(
+              child: Text('No saved card'),
+            );
+          }
+
           return ListView.builder(
               shrinkWrap: true,
-              itemCount: cardPaymentMethods!.length,
+              itemCount: cardPaymentMethods.length,
               itemBuilder: ((context, index) {
                 final card = cardPaymentMethods[index];
-                return ListTile(
-                  title: Text('**** **** **** ${card.last4}'),
-                  subtitle: Text('${card.expiryMonth}/${card.expiryYear}'),
-                  onTap: () =>
-                      _handleSavedCardButtonPressed(cardPaymentMethods[index]),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () =>
-                        _handleDeleteButtonPressed(cardPaymentMethods[index]),
+                return Container(
+                  decoration: const BoxDecoration(
+                      color: Color(0XFFf8f8f8),
+                      borderRadius: BorderRadius.all(Radius.circular(15))),
+                  child: ListTile(
+                    title: Text(
+                      '**** **** **** ${card.last4}',
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    subtitle: Text('${card.expiryMonth}/${card.expiryYear}'),
+                    onTap: () => _handleSavedCardButtonPressed(
+                        cardPaymentMethods[index]),
+                    trailing: IconButton(
+                      icon: Icon(
+                        Icons.close,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      onPressed: () =>
+                          _handleDeleteButtonPressed(cardPaymentMethods[index]),
+                    ),
                   ),
                 );
               }));
@@ -115,27 +161,22 @@ class _CardPageState extends State<CardPage> {
 
   _handleDeleteButtonPressed(CardPaymentMethod cardPaymentMethod) async {
     try {
-      setState(() {
-        loading = true;
-      });
+      _parentContext.loaderOverlay.show();
       await paymentService.deletePaymentMethod(cardPaymentMethod);
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Card removed successfully")));
+      setState(() {}); // Used to remove the deleted card from display
     } catch (error) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Failed to remove card")));
     } finally {
-      setState(() {
-        loading = false;
-      });
+      _parentContext.loaderOverlay.hide();
     }
   }
 
   _handleSavedCardButtonPressed(CardPaymentMethod cardPaymentMethod) async {
     try {
-      setState(() {
-        loading = true;
-      });
+      _parentContext.loaderOverlay.show();
       await paymentService.payWithSavedCard(
           productId: widget.productToPurchase.id,
           cardPaymentMethod: cardPaymentMethod);
@@ -146,9 +187,7 @@ class _CardPageState extends State<CardPage> {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Failed to make payment")));
     } finally {
-      setState(() {
-        loading = false;
-      });
+      _parentContext.loaderOverlay.hide();
     }
   }
 

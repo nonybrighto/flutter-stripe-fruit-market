@@ -28,9 +28,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Stripe Payment Tutorial',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.orange,
+        scaffoldBackgroundColor: const Color(0XFFffffff),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            primary: const Color(0XFF2c4352),
+            onPrimary: Colors.white, // Text color
+          ),
+        ),
       ),
-      home: const LoaderOverlay(child: AuthPage()),
+      home: const AuthPage(),
     );
   }
 }
