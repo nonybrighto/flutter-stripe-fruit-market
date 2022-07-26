@@ -13,7 +13,8 @@ class PaymentService {
   Future<Map<String, dynamic>> createPaymentIntent(
       {required String productId,
       CardPaymentMethod? cardPaymentMethod,
-      bool includeEphemeralKey = false}) async {
+      bool includeEphemeralKey = false,
+      bool allowFutureUsage = false}) async {
     final userToken = await authService.getAuthorizedUserToken();
     Response response =
         await Dio(BaseOptions(headers: {'Authorization': 'Bearer $userToken'}))
@@ -21,6 +22,7 @@ class PaymentService {
       'productId': productId,
       'paymentMethodId': cardPaymentMethod?.id,
       'includeEphemeralKey': includeEphemeralKey,
+      'allowFutureUsage': allowFutureUsage
     });
     return response.data;
   }
@@ -29,6 +31,7 @@ class PaymentService {
     final paymentIntent = await createPaymentIntent(
       productId: productId,
       includeEphemeralKey: true,
+      allowFutureUsage: true,
     );
     final authenticatedCustomer =
         await authService.customerService?.getAuthenticatedCustomer();
@@ -52,11 +55,14 @@ class PaymentService {
     await Stripe.instance.presentPaymentSheet();
   }
 
-  payWithCardField({productId, saveCard = false}) async {
+  payWithCardField({productId, allowFutureUsage = false}) async {
     try {
       final authenticatedCustomer =
           await authService.customerService?.getAuthenticatedCustomer();
-      final paymentIntent = await createPaymentIntent(productId: productId);
+      final paymentIntent = await createPaymentIntent(
+        productId: productId,
+        allowFutureUsage: allowFutureUsage,
+      );
       final billingDetails = BillingDetails(
         email: authenticatedCustomer!.email,
       );
@@ -66,10 +72,6 @@ class PaymentService {
         PaymentMethodParams.card(
           paymentMethodData: PaymentMethodData(
             billingDetails: billingDetails,
-          ),
-          options: PaymentMethodOptions(
-            setupFutureUsage:
-                saveCard ? PaymentIntentsFutureUsage.OffSession : null,
           ),
         ),
       );

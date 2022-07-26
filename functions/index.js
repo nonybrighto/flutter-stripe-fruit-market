@@ -30,23 +30,22 @@ exports.createPaymentIntent = functions.https
     .onRequest(async (request, response) => {
       try {
         let ephemeralKey;
-        const {productId, paymentMethodId, includeEphemeralKey} = request.body;
+        const {productId, paymentMethodId,
+          includeEphemeralKey, allowFutureUsage} = request.body;
         const customer = await _getCustomerFromRequest(request);
         const product = await _getProduct(productId);
         const stripeObject = {
           amount: product.amount * 100, // Use smallest currency unit (cent)
           currency: "USD",
           payment_method_types: ["card"],
-          setup_future_usage: "off_session",
           customer: customer.stripeCustomerId,
           metadata: {
             productId,
             customerId: customer.id,
           },
+          ...(allowFutureUsage && {setup_future_usage: "off_session"}),
+          ...(paymentMethodId && {payment_method: paymentMethodId}),
         };
-        if (paymentMethodId) {
-          stripeObject.payment_method = paymentMethodId;
-        }
 
         if (includeEphemeralKey) {
           ephemeralKey = await stripe.

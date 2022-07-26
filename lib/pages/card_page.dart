@@ -198,7 +198,7 @@ class _CardPageState extends State<CardPage> {
       });
       await paymentService.payWithCardField(
         productId: widget.productToPurchase.id,
-        saveCard: _saveCard,
+        allowFutureUsage: _saveCard,
       );
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Payment successful")));
