@@ -10,43 +10,19 @@ class PaymentService {
 
   PaymentService({required this.authService});
 
-  Future<Map<String, dynamic>> createPaymentIntent(
-      {required String productId,
-      CardPaymentMethod? cardPaymentMethod,
-      bool includeEphemeralKey = false,
-      bool allowFutureUsage = false}) async {
-    final userToken = await authService.getAuthorizedUserToken();
-    Response response =
-        await Dio(BaseOptions(headers: {'Authorization': 'Bearer $userToken'}))
-            .post("$apiBaseUrl/createPaymentIntent", data: {
-      'productId': productId,
-      'paymentMethodId': cardPaymentMethod?.id,
-      'includeEphemeralKey': includeEphemeralKey,
-      'allowFutureUsage': allowFutureUsage
-    });
-    return response.data;
-  }
-
   payWithPaymentSheet({productId}) async {
-    final paymentIntent = await createPaymentIntent(
+    final data = await _createPaymentSheet(
       productId: productId,
-      includeEphemeralKey: true,
-      allowFutureUsage: true,
     );
     final authenticatedCustomer =
         await authService.customerService?.getAuthenticatedCustomer();
     await Stripe.instance.initPaymentSheet(
       paymentSheetParameters: SetupPaymentSheetParameters(
-        // Main params
-        paymentIntentClientSecret: paymentIntent['clientSecret'],
-        merchantDisplayName: 'Flutter Stripe Payment',
-        // Customer params
+        paymentIntentClientSecret: data['clientSecret'],
+        customerEphemeralKeySecret: data['ephemeralKey'],
+        merchantDisplayName: 'Fruit Market',
         customerId: authenticatedCustomer!.stripeCustomerId,
-        customerEphemeralKeySecret: paymentIntent['ephemeralKey'],
-        // Extra params
-        applePay: true,
-        googlePay: true,
-        primaryButtonColor: Colors.redAccent,
+        primaryButtonColor: Colors.orange,
         // billingDetails: billingDetails,
         testEnv: true,
         merchantCountryCode: 'US',
@@ -59,7 +35,7 @@ class PaymentService {
     try {
       final authenticatedCustomer =
           await authService.customerService?.getAuthenticatedCustomer();
-      final paymentIntent = await createPaymentIntent(
+      final paymentIntent = await _createPaymentIntent(
         productId: productId,
         allowFutureUsage: allowFutureUsage,
       );
@@ -85,8 +61,6 @@ class PaymentService {
     Response response =
         await Dio(BaseOptions(headers: {'Authorization': 'Bearer $userToken'}))
             .get("$apiBaseUrl/fetchCustomerCards");
-    print(response);
-    print(response.data);
     final cards = response.data.map<CardPaymentMethod>((intent) {
       final card = intent['card'];
       return CardPaymentMethod(
@@ -120,7 +94,7 @@ class PaymentService {
     try {
       // method 1
       // comment out method one and uncomment method 2 to rey it out
-      final paymentIntent = await createPaymentIntent(
+      final paymentIntent = await _createPaymentIntent(
         productId: productId,
         cardPaymentMethod: cardPaymentMethod,
       );
@@ -154,6 +128,34 @@ class PaymentService {
             .post("$apiBaseUrl/chargeCardOffSession", data: {
       'productId': productId,
       'paymentMethodId': cardPaymentMethod?.id
+    });
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> _createPaymentIntent({
+    required String productId,
+    CardPaymentMethod? cardPaymentMethod,
+    bool allowFutureUsage = false,
+  }) async {
+    final userToken = await authService.getAuthorizedUserToken();
+    Response response =
+        await Dio(BaseOptions(headers: {'Authorization': 'Bearer $userToken'}))
+            .post("$apiBaseUrl/createPaymentIntent", data: {
+      'productId': productId,
+      'paymentMethodId': cardPaymentMethod?.id,
+      'allowFutureUsage': allowFutureUsage
+    });
+    return response.data;
+  }
+
+  Future<Map<String, dynamic>> _createPaymentSheet({
+    required String productId,
+  }) async {
+    final userToken = await authService.getAuthorizedUserToken();
+    Response response =
+        await Dio(BaseOptions(headers: {'Authorization': 'Bearer $userToken'}))
+            .post("$apiBaseUrl/createPaymentSheet", data: {
+      'productId': productId,
     });
     return response.data;
   }

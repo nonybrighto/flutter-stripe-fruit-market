@@ -26,12 +26,41 @@ exports.createStripeCustomer = functions.firestore
       }
     });
 
+exports.createPaymentSheet = functions.https
+    .onRequest(async (request, response) => {
+      try {
+        const {productId} = request.body;
+        const customer = await _getCustomerFromRequest(request);
+        const product = await _getProduct(productId);
+        const stripeObject = {
+          amount: product.amount * 100, // Use smallest currency unit (cent)
+          currency: "USD",
+          payment_method_types: ["card"],
+          customer: customer.stripeCustomerId,
+          metadata: {
+            productId,
+            customerId: customer.id,
+          },
+        };
+        const ephemeralKey = await stripe.
+            ephemeralKeys.create({customer: customer.stripeCustomerId},
+                {apiVersion: "2020-08-27"},
+            );
+        const paymentIntent = await stripe.paymentIntents.create(stripeObject);
+        return response.status(200).send({
+          clientSecret: paymentIntent["client_secret"],
+          ephemeralKey: ephemeralKey.secret,
+        });
+      } catch (error) {
+        functions.logger.error("init payment sheet", error);
+        return response.sendStatus(400);
+      }
+    });
+
 exports.createPaymentIntent = functions.https
     .onRequest(async (request, response) => {
       try {
-        let ephemeralKey;
-        const {productId, paymentMethodId,
-          includeEphemeralKey, allowFutureUsage} = request.body;
+        const {productId, paymentMethodId, allowFutureUsage} = request.body;
         const customer = await _getCustomerFromRequest(request);
         const product = await _getProduct(productId);
         const stripeObject = {
@@ -47,19 +76,12 @@ exports.createPaymentIntent = functions.https
           ...(paymentMethodId && {payment_method: paymentMethodId}),
         };
 
-        if (includeEphemeralKey) {
-          ephemeralKey = await stripe.
-              ephemeralKeys.create({customer: customer.stripeCustomerId},
-                  {apiVersion: "2020-08-27"},
-              );
-        }
         const paymentIntent = await stripe.paymentIntents.create(stripeObject);
         return response.status(200).send({
           clientSecret: paymentIntent["client_secret"],
-          ephemeralKey: ephemeralKey && ephemeralKey.secret,
         });
       } catch (error) {
-        functions.logger.error("intent create", error);
+        functions.logger.error("create payment intent", error);
         return response.sendStatus(400);
       }
     });

@@ -132,6 +132,7 @@ class _CardPageState extends State<CardPage> {
               itemBuilder: ((context, index) {
                 final card = cardPaymentMethods[index];
                 return Container(
+                  margin: const EdgeInsets.symmetric(vertical: 5),
                   decoration: const BoxDecoration(
                       color: Color(0XFFf8f8f8),
                       borderRadius: BorderRadius.all(Radius.circular(15))),
@@ -183,7 +184,6 @@ class _CardPageState extends State<CardPage> {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Payment successful")));
     } catch (error) {
-      print(error);
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Failed to make payment")));
     } finally {
