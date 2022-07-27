@@ -18,11 +18,12 @@ class CardPage extends StatefulWidget {
 }
 
 class _CardPageState extends State<CardPage> {
+  
+  late BuildContext _parentContext;
   bool allowPayButtonPress = false;
   final controller = CardFormEditController();
   bool loading = false;
-  bool _saveCard = false;
-  late BuildContext _parentContext;
+  bool saveCard = false;
   PaymentService paymentService = PaymentService(
     authService: AuthService(
       customerService: CustomerService(),
@@ -80,10 +81,10 @@ class _CardPageState extends State<CardPage> {
       Row(
         children: [
           Checkbox(
-              value: _saveCard,
+              value: saveCard,
               onChanged: (value) {
                 setState(() {
-                  _saveCard = value ?? false;
+                  saveCard = value ?? false;
                 });
               }),
           const Text('Save Card'),
@@ -203,7 +204,7 @@ class _CardPageState extends State<CardPage> {
       });
       await paymentService.payWithCardField(
         productId: widget.productToPurchase.id,
-        allowFutureUsage: _saveCard,
+        allowFutureUsage: saveCard,
       );
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Payment successful")));

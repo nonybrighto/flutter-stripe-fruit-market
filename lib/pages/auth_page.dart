@@ -12,8 +12,8 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
-  bool _isSignIn = true;
-  bool _loading = false;
+  bool isSignIn = true;
+  bool loading = false;
 
   final TextEditingController _emailController =
       TextEditingController(text: 'nonybrighto3@gmail.com');
@@ -59,26 +59,26 @@ class _AuthPageState extends State<AuthPage> {
                     50), // fromHeight use double.infinity as width and 40 is the height
               ),
               onPressed: _onAuthButtonPressed,
-              child: _loading
+              child: loading
                   ? const CircularProgressIndicator()
-                  : Text(_isSignIn ? 'Sign In' : 'Sign Up'),
+                  : Text(isSignIn ? 'Sign In' : 'Sign Up'),
             ),
             const SizedBox(height: 20),
             RichText(
               textAlign: TextAlign.center,
               text: TextSpan(
                   style: const TextStyle(color: Colors.grey),
-                  text: _isSignIn
+                  text: isSignIn
                       ? "Don't have an account? "
                       : 'Already registered? ',
                   children: [
                     TextSpan(
-                        text: _isSignIn ? "Sign Up" : "Sign In",
+                        text: isSignIn ? "Sign Up" : "Sign In",
                         style: TextStyle(color: Theme.of(context).primaryColor),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
                             setState(() {
-                              _isSignIn = !_isSignIn;
+                              isSignIn = !isSignIn;
                             });
                           }),
                   ]),
@@ -92,10 +92,10 @@ class _AuthPageState extends State<AuthPage> {
   _onAuthButtonPressed() async {
     try {
       setState(() {
-        _loading = true;
+        loading = true;
       });
       final _authService = AuthService(customerService: CustomerService());
-      if (_isSignIn) {
+      if (isSignIn) {
         await _authService.signIn(
             email: _emailController.text, password: _passwordController.text);
       } else {
@@ -111,7 +111,7 @@ class _AuthPageState extends State<AuthPage> {
       ));
     }
     setState(() {
-      _loading = false;
+      loading = false;
     });
   }
 }

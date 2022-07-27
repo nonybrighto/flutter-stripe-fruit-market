@@ -18,9 +18,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Customer? _authenticatedCustomer;
-  final CustomerService _customerService = CustomerService();
   late BuildContext _parentContext;
+  Customer? authenticatedCustomer;
+  final CustomerService customerService = CustomerService();
 
   @override
   void initState() {
@@ -35,11 +35,11 @@ class _HomePageState extends State<HomePage> {
       overlayWidget: const Center(child: CircularProgressIndicator()),
       child: BaseView(
         title: 'Home',
-        isLoading: _authenticatedCustomer == null,
+        isLoading: authenticatedCustomer == null,
         child: Column(children: [
-          if (_authenticatedCustomer != null)
+          if (authenticatedCustomer != null)
             Text(
-              _authenticatedCustomer!.email,
+              authenticatedCustomer!.email,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           const SizedBox(height: 15),
@@ -76,9 +76,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   _setAuthenticatedUser() async {
-    final customer = await _customerService.getAuthenticatedCustomer();
+    final customer = await customerService.getAuthenticatedCustomer();
     setState(() {
-      _authenticatedCustomer = customer;
+      authenticatedCustomer = customer;
     });
   }
 
