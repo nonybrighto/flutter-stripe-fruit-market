@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:flutter_stripe_payment/models/card_payment_method.dart';
 import 'package:flutter_stripe_payment/models/product.dart';
+import 'package:flutter_stripe_payment/pages/home_page.dart';
 import 'package:flutter_stripe_payment/services/auth_service.dart';
 import 'package:flutter_stripe_payment/services/customer_service.dart';
 import 'package:flutter_stripe_payment/services/payment_service.dart';
@@ -51,13 +52,15 @@ class _CardPageState extends State<CardPage> {
       overlayWidget: const Center(child: CircularProgressIndicator()),
       child: BaseView(
         title: 'title',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ..._buildCardForm(),
-            const SizedBox(height: 20),
-            ..._buildSavedCardsDisplay(),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ..._buildCardForm(),
+              const SizedBox(height: 20),
+              ..._buildSavedCardsDisplay(),
+            ],
+          ),
         ),
       ),
     );
@@ -183,6 +186,8 @@ class _CardPageState extends State<CardPage> {
           cardPaymentMethod: cardPaymentMethod);
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Payment successful")));
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => const HomePage()));
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Failed to make payment")));
@@ -202,8 +207,9 @@ class _CardPageState extends State<CardPage> {
       );
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Payment successful")));
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => const HomePage()));
     } catch (error) {
-      // error
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Failed to make payment")));
     } finally {
