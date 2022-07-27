@@ -16,9 +16,9 @@ class _AuthPageState extends State<AuthPage> {
   bool loading = false;
 
   final TextEditingController _emailController =
-      TextEditingController(text: 'nonybrighto3@gmail.com');
+      TextEditingController(text: '');
   final TextEditingController _passwordController =
-      TextEditingController(text: 'tested69');
+      TextEditingController(text: '');
   @override
   Widget build(BuildContext context) {
     return Scaffold(

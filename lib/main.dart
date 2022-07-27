@@ -25,7 +25,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Stripe Payment Tutorial',
+      title: 'Fruit Market',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.orange,
         scaffoldBackgroundColor: const Color(0XFFffffff),
